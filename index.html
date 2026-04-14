@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GB Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        :root {
+            --sidebar-color: #800040; 
+            --main-bg-color: #4d0026;   
+            --accent-red: #ff0055;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--main-bg-color);
+            color: #ffffff;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+        }
+
+        aside {
+            width: 320px;
+            background: var(--sidebar-color);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+        }
+
+        main {
+            margin-left: 320px;
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .glass {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-add {
+            background: #000000;
+            transition: all 0.2s;
+        }
+        .btn-add:not(:disabled):hover {
+            background: var(--accent-red);
+        }
+        .btn-add:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .task-done {
+            text-decoration: line-through;
+            opacity: 0.3;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .link-item {
+            height: 52px;
+            transition: all 0.2s ease;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            border-radius: 0.75rem;
+        }
+        .link-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--main-bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-overlay">
+        <div class="text-4xl font-black italic mb-4 animate-pulse">GB PORTAL</div>
+        <div id="status-text" class="flex items-center space-x-2 text-white/50 text-xs font-bold uppercase tracking-widest">
+            <i class="fas fa-circle-notch animate-spin"></i>
+            <span>Establishing Secure Cloud Connection...</span>
+        </div>
+    </div>
+
+    <aside class="p-6 overflow-y-auto custom-scrollbar">
+        <h1 class="text-3xl font-black italic tracking-tighter text-white mb-8">GB PORTAL</h1>
+        <div class="space-y-4 mb-10">
+            <div class="glass p-4 rounded-2xl border-l-4 border-white">
+                <div id="clock" class="text-3xl font-black tracking-tighter">00:00:00</div>
+                <div id="date" class="text-white/60 text-xs font-bold uppercase">202X/XX/XX</div>
+            </div>
+            <div class="glass p-4 rounded-2xl flex items-center justify-around border-l-4 border-white">
+                <div id="weather-icon" class="text-3xl text-white">
+                    <i class="fas fa-cloud-sun"></i>
+                </div>
+                <div class="text-right">
+                    <div id="temp" class="text-2xl font-black">--°C</div>
+                </div>
+            </div>
+        </div>
+        <nav id="nav-links"></nav>
+    </aside>
+
+    <main>
+        <header class="flex justify-end">
+            <div class="w-full max-w-md">
+                <form action="https://www.google.com/search" method="GET" class="relative group">
+                    <input type="text" name="q" placeholder="Google Search..." class="w-full glass py-3 px-12 rounded-2xl focus:outline-none transition-all text-base font-bold">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-lg group-focus-within:text-white"></i>
+                </form>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 flex-1">
+            <section class="glass p-8 rounded-[2.5rem] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-black italic tracking-widest uppercase"><i class="fas fa-check-square mr-3 text-red-500"></i>ToDo</h2>
+                    <span id="auth-status" class="text-[9px] border border-white/20 px-2 py-1 rounded font-bold uppercase text-white/50">Stand-by</span>
+                </div>
+                <form id="todo-form" class="flex gap-2 mb-8">
+                    <input type="text" id="todo-input" placeholder="タスクを追加..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3 outline-none" disabled>
+                    <button type="submit" class="btn-add px-8 rounded-xl font-black uppercase text-xs" disabled>Add</button>
+                </form>
+                <ul id="todo-list" class="space-y-3 overflow-y-auto custom-scrollbar pr-2"></ul>
+            </section>
+
+            <section class="glass p-8 rounded-[2.5rem] flex flex-col shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-black italic tracking-widest uppercase"><i class="fas fa-archive mr-3 text-red-500"></i>Backlog</h2>
+                </div>
+                <form id="task-form" class="flex gap-2 mb-8">
+                    <input type="text" id="task-input" placeholder="バックログを追加..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3 outline-none" disabled>
+                    <button type="submit" class="btn-add px-8 rounded-xl font-black uppercase text-xs" disabled>Add</button>
+                </form>
+                <ul id="task-list" class="space-y-3 overflow-y-auto custom-scrollbar pr-2"></ul>
+            </section>
+        </div>
+        <footer class="text-right">
+            <div class="text-[10px] font-black tracking-[0.4em] text-white/20 uppercase italic">GB PORTAL CORE V6.6 (VERIFIED CLOUD)</div>
+        </footer>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gb-portal-default';
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUser = null;
+
+        // 指数バックオフ付きリトライ関数 (必須要件)
+        async function withRetry(fn, retries = 5, delay = 1000) {
+            try {
+                return await fn();
+            } catch (err) {
+                if (retries === 0) throw err;
+                await new Promise(r => setTimeout(r, delay));
+                return withRetry(fn, retries - 1, delay * 2);
+            }
+        }
+
+        // 認証フロー (RULE 3 遵守)
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await withRetry(() => signInWithCustomToken(auth, __initial_auth_token));
+                } else {
+                    await withRetry(() => signInAnonymously(auth));
+                }
+            } catch (err) {
+                document.getElementById('status-text').innerHTML = `<span class="text-red-500">Connection Failed: ${err.code}</span>`;
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-overlay').style.opacity = '0';
+                setTimeout(() => document.getElementById('auth-overlay').style.display = 'none', 500);
+                document.querySelectorAll('input, button').forEach(el => el.disabled = false);
+                document.getElementById('auth-status').textContent = "Cloud Verified";
+                document.getElementById('auth-status').classList.replace('text-white/50', 'text-green-400');
+                
+                startSync('todos', 'todo-list');
+                startSync('tasks', 'task-list');
+            }
+        });
+
+        initAuth();
+
+        function startSync(colName, listId) {
+            // RULE 1 遵守
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', colName);
+            onSnapshot(colRef, (snapshot) => {
+                const list = document.getElementById(listId);
+                list.innerHTML = '';
+                const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                
+                // クライアントサイドソート
+                items.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between p-4 glass rounded-2xl border-l-2 border-white transition-all hover:bg-white/5';
+                    li.innerHTML = `
+                        <div class="flex items-center space-x-4 overflow-hidden">
+                            <button class="toggle-btn flex-shrink-0 w-6 h-6 rounded-lg border-2 border-white/20 flex items-center justify-center ${item.completed ? 'bg-white border-white' : ''}">
+                                ${item.completed ? '<i class="fas fa-check text-[10px] text-black"></i>' : ''}
+                            </button>
+                            <span class="font-bold text-sm ${item.completed ? 'task-done' : 'text-white'}">${item.text}</span>
+                        </div>
+                        <button class="delete-btn text-white/20 hover:text-white ml-4"><i class="fas fa-trash-alt text-xs"></i></button>
+                    `;
+                    const itemRef = doc(db, 'artifacts', appId, 'public', 'data', colName, item.id);
+                    li.querySelector('.toggle-btn').onclick = () => updateDoc(itemRef, { completed: !item.completed });
+                    li.querySelector('.delete-btn').onclick = () => deleteDoc(itemRef);
+                    list.appendChild(li);
+                });
+            }, (err) => console.error(err));
+        }
+
+        async function handleAdd(e, inputId, colName) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const input = document.getElementById(inputId);
+            const text = input.value.trim();
+            if (!text) return;
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', colName), {
+                    text, completed: false, createdAt: serverTimestamp(), uid: currentUser.uid
+                });
+                input.value = '';
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('todo-form').onsubmit = (e) => handleAdd(e, 'todo-input', 'todos');
+        document.getElementById('task-form').onsubmit = (e) => handleAdd(e, 'task-input', 'tasks');
+
+        // その他（時計、天気、リンク）
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('ja-JP', { hour12: false });
+            document.getElementById('date').textContent = now.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' });
+        }, 1000);
+
+        const links = [
+            { name: "Google", url: "https://google.com", icon: "fab fa-google" },
+            { name: "ホーム GLADD", url: "https://gladd.jp/category/home/?order=price_asc", icon: "fas fa-home" },
+            { name: "メンズ GLADD", url: "https://gladd.jp/category/mens/?order=price_asc", icon: "fas fa-user-tie" },
+            { name: "PayPay銀行", url: "https://login.paypay-bank.co.jp/", icon: "fas fa-university" },
+            { name: "楽天銀行", url: "https://direct.rakuten-bank.co.jp/", icon: "fas fa-university" },
+            { name: "YouTube", url: "https://youtube.com", icon: "fab fa-youtube" }
+        ];
+        const nav = document.getElementById('nav-links');
+        links.forEach(l => {
+            const a = document.createElement('a');
+            a.href = l.url; a.target = "_blank"; a.className = "link-item";
+            a.innerHTML = `<i class="${l.icon} w-8 text-lg"></i><span class="text-xs font-bold">${l.name}</span>`;
+            nav.appendChild(a);
+        });
+
+        async function fetchWeather() {
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.6465&longitude=139.6533&current_weather=true&timezone=Asia%2FTokyo');
+                const data = await res.json();
+                document.getElementById('temp').textContent = `${Math.round(data.current_weather.temperature)}°C`;
+            } catch (e) {}
+        }
+        fetchWeather();
+    </script>
+</body>
+</html>
