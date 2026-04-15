@@ -10,9 +10,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
         :root { 
-            --sidebar-color: #800040; 
+            --sidebar-left-color: #800040; 
+            --sidebar-right-color: #2a0015; 
             --main-bg-color: #4d0026; 
             --accent-red: #ff0055; 
+            --accent-blue: #60a5fa; 
         }
         
         body { 
@@ -25,74 +27,135 @@
             overflow: hidden; 
         }
         
-        /* Layout Structure */
-        aside { 
-            width: 300px; 
-            background: var(--sidebar-color); 
+        /* Left Sidebar */
+        .sidebar-left { 
+            width: 280px; 
+            background: var(--sidebar-left-color); 
             height: 100vh; 
             position: fixed; 
             left: 0; 
             top: 0; 
-            border-right: 1px solid rgba(255, 255, 255, 0.1); 
+            border-right: 1px solid rgba(255, 255, 255, 0.05); 
             z-index: 50; 
-            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Right Sidebar (TOOLS) */
+        .sidebar-right {
+            width: 260px;
+            background: var(--sidebar-right-color);
+            height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 60;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            transform: translateX(100%); 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.3);
+        }
+        .sidebar-right.open { transform: translateX(0); }
+
+        /* Desktop Condition (>1200px) */
+        @media (min-width: 1200px) {
+            .sidebar-right {
+                transform: translateX(0);
+                box-shadow: none;
+                z-index: 40;
+            }
+            main { margin-right: 260px; }
+            #tools-toggle { display: none !important; }
+            .sidebar-right .close-btn { display: none; }
         }
 
         @media (max-width: 768px) {
-            aside { transform: translateX(-100%); }
-            aside.open { transform: translateX(0); }
+            .sidebar-left { transform: translateX(-100%); }
+            .sidebar-left.open { transform: translateX(0); }
             main { margin-left: 0 !important; width: 100% !important; }
         }
         
         main { 
-            margin-left: 300px; 
+            margin-left: 280px; 
             flex: 1; 
             padding: 1.5rem; 
             display: flex; 
             flex-direction: column; 
-            gap: 1.5rem; 
-            width: calc(100% - 300px); 
+            gap: 1.2rem; 
             height: 100vh; 
             transition: all 0.3s;
         }
         
-        /* UI Elements */
         .glass { 
-            background: rgba(0, 0, 0, 0.3); 
+            background: rgba(0, 0, 0, 0.25); 
             backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border: 1px solid rgba(255, 255, 255, 0.06); 
         }
         
         .link-item { 
-            height: 44px; 
-            background: rgba(0,0,0,0.15); 
-            border: 1px solid rgba(255,255,255,0.05); 
-            transition: all 0.2s ease; 
+            height: 40px; 
+            background: rgba(0,0,0,0.1); 
+            border: 1px solid rgba(255,255,255,0.03); 
+            transition: all 0.2s; 
             display: flex; 
             align-items: center; 
             padding: 0 1rem; 
-            border-radius: 12px; 
-            margin-bottom: 8px; 
+            border-radius: 10px; 
+            margin-bottom: 5px; 
             text-decoration: none; 
-            color: white; 
+            color: rgba(255,255,255,0.8); 
         }
         .link-item:hover { 
             background: rgba(255,255,255,0.1); 
-            transform: translateX(8px); 
+            color: #fff;
+            transform: translateX(4px); 
             border-color: var(--accent-red);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .tool-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+        }
+        .tool-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
         }
         
-        /* Calendar Theme */
+        #tools-toggle {
+            background: rgba(96, 165, 250, 0.15);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: var(--accent-blue);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
         .calendar-wrapper {
             flex: 1;
-            background: #121212; 
-            border-radius: 1.5rem;
+            background: #000; 
+            border-radius: 1.2rem;
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             border: 1px solid rgba(255,255,255,0.1);
         }
         
@@ -100,116 +163,109 @@
             width: 100%;
             height: 100%;
             border: none;
-            /* ダークモードハック: 彩度を少し下げて目に優しく調整 */
-            filter: invert(92%) hue-rotate(180deg) brightness(1.05) saturate(0.8);
+            filter: invert(92%) hue-rotate(180deg) brightness(1.05) saturate(0.6);
         }
 
-        #mobile-toggle {
+        #mobile-left-toggle {
             display: none;
             position: fixed;
-            bottom: 2rem;
-            right: 2rem;
+            bottom: 1.5rem;
+            left: 1.5rem;
             z-index: 100;
-            width: 60px;
-            height: 60px;
-            border-radius: 18px;
-            background: var(--accent-red);
-            box-shadow: 0 8px 20px rgba(255, 0, 85, 0.4);
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: var(--sidebar-left-color);
             align-items: center;
             justify-content: center;
-            border: none;
+            border: 1px solid rgba(255,255,255,0.2);
             color: white;
             cursor: pointer;
-            transition: transform 0.2s;
         }
-        #mobile-toggle:active { transform: scale(0.9); }
-        @media (max-width: 768px) { #mobile-toggle { display: flex; } }
+        @media (max-width: 768px) { #mobile-left-toggle { display: flex; } }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- Mobile Navigation Overlay -->
-    <button id="mobile-toggle" onclick="document.querySelector('aside').classList.toggle('open')">
-        <i class="fas fa-bars text-2xl"></i>
+    <button id="mobile-left-toggle" onclick="document.querySelector('.sidebar-left').classList.toggle('open')">
+        <i class="fas fa-bars"></i>
     </button>
 
-    <aside class="p-6">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-left p-6">
         <div class="flex-shrink-0">
-            <h1 class="text-3xl font-black italic tracking-tighter mb-8 text-white flex items-center gap-2">
-                <span class="bg-white text-[#800040] px-2 rounded">GB</span> PORTAL
+            <h1 class="text-2xl font-black italic tracking-tighter mb-6 text-white flex items-center gap-2">
+                <span class="bg-white text-[#800040] px-1.5 rounded">GB</span> PORTAL
             </h1>
             
-            <!-- Status Cards -->
-            <div class="space-y-4 mb-8">
-                <div class="glass p-4 rounded-2xl border-l-4 border-white">
-                    <div id="clock" class="text-3xl font-black tracking-tighter text-white tabular-nums">00:00:00</div>
-                    <div id="date" class="text-white/60 text-[10px] font-bold uppercase tracking-wider">202X/XX/XX</div>
+            <div class="space-y-3 mb-6">
+                <div class="glass p-4 rounded-xl border-l-4 border-white">
+                    <div id="clock" class="text-2xl font-black tracking-tighter text-white tabular-nums">00:00:00</div>
+                    <div id="date" class="text-white/40 text-[9px] font-bold uppercase tracking-wider">202X/XX/XX</div>
                 </div>
-                <div class="glass p-4 rounded-2xl flex items-center justify-between border-l-4 border-white/30">
-                    <i id="weather-icon" class="fas fa-spinner fa-spin text-2xl text-white/40"></i>
+                <div class="glass p-3 rounded-xl flex items-center justify-between">
+                    <i id="weather-icon" class="fas fa-circle-notch fa-spin text-xl text-white/20"></i>
                     <div class="text-right">
-                        <div id="temp" class="text-xl font-black text-white">--°C</div>
-                        <div class="text-[9px] font-bold text-white/40 uppercase tracking-widest">Setagaya, Tokyo</div>
+                        <div id="temp" class="text-lg font-black text-white">--°C</div>
+                        <div class="text-[8px] font-bold text-white/30 uppercase">Setagaya, Tokyo</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Links Container (Scrollable) -->
-        <nav class="flex-1 overflow-y-auto custom-scrollbar pr-2">
-            <h2 class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Essential</h2>
-            <div class="mb-8">
-                <a href="https://google.com" target="_blank" class="link-item"><i class="fab fa-google w-8 opacity-70"></i><span class="text-xs font-bold">Google</span></a>
-                <a href="https://youtube.com" target="_blank" class="link-item"><i class="fab fa-youtube w-8 opacity-70"></i><span class="text-xs font-bold">YouTube</span></a>
-                <a href="https://maps.google.com" target="_blank" class="link-item"><i class="fas fa-map-location-dot w-8 opacity-70"></i><span class="text-xs font-bold">Maps</span></a>
-                <a href="https://www.bloomberg.com/jp/" target="_blank" class="link-item"><i class="fas fa-chart-line w-8 opacity-70"></i><span class="text-xs font-bold">Bloomberg</span></a>
-                <a href="https://gb-n8n.duckdns.org/signin?redirect=%252Fhome%252Fworkflows" target="_blank" class="link-item"><i class="fas fa-diagram-project w-8 opacity-70"></i><span class="text-xs font-bold">n8n Automation</span></a>
-            </div>
+        <nav class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <!-- Essential Section -->
+            <section class="mb-6">
+                <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Essential</h2>
+                <a href="https://google.com" target="_blank" class="link-item"><i class="fab fa-google w-8 opacity-50"></i><span class="text-[11px] font-bold">Google</span></a>
+                <a href="https://youtube.com" target="_blank" class="link-item"><i class="fab fa-youtube w-8 opacity-50"></i><span class="text-[11px] font-bold">YouTube</span></a>
+                <a href="https://maps.google.com" target="_blank" class="link-item"><i class="fas fa-map-location-dot w-8 opacity-50"></i><span class="text-[11px] font-bold">Maps</span></a>
+                <a href="https://www.bloomberg.com/jp/" target="_blank" class="link-item"><i class="fas fa-chart-line w-8 opacity-50"></i><span class="text-[11px] font-bold">Bloomberg</span></a>
+                <a href="https://gb-n8n.duckdns.org" target="_blank" class="link-item"><i class="fas fa-robot w-8 opacity-50"></i><span class="text-[11px] font-bold">n8n Automation</span></a>
+            </section>
 
-            <h2 class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">Banking</h2>
-            <div class="mb-8">
-                <a href="https://login.paypay-bank.co.jp/wctx/1D1DFxFDg.do" target="_blank" class="link-item"><i class="fas fa-building-columns w-8 opacity-70"></i><span class="text-xs font-bold">PayPay Bank</span></a>
-                <a href="https://fes.rakuten-bank.co.jp/MS/main/RbS?CurrentPageID=START&&COMMAND=LOGIN" target="_blank" class="link-item"><i class="fas fa-credit-card w-8 opacity-70"></i><span class="text-xs font-bold">Rakuten Bank</span></a>
-            </div>
+            <!-- Banking Section -->
+            <section class="mb-6">
+                <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Banking</h2>
+                <a href="https://login.paypay-bank.co.jp" target="_blank" class="link-item"><i class="fas fa-wallet w-8 opacity-50"></i><span class="text-[11px] font-bold">PayPay Bank</span></a>
+                <a href="https://fes.rakuten-bank.co.jp" target="_blank" class="link-item"><i class="fas fa-credit-card w-8 opacity-50"></i><span class="text-[11px] font-bold">Rakuten Bank</span></a>
+            </section>
 
-            <h2 class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 italic">GLADD Discovery</h2>
-            <div id="nav-links">
-                <a href="https://gladd.jp/category/home/?order=price_asc" target="_blank" class="link-item">
-                    <i class="fas fa-couch w-8 opacity-70"></i><span class="text-xs font-bold">Home</span>
-                </a>
-                <a href="https://gladd.jp/category/mens/?order=price_asc" target="_blank" class="link-item">
-                    <i class="fas fa-shirt w-8 opacity-70"></i><span class="text-xs font-bold">Men's</span>
-                </a>
-                <a href="https://gladd.jp/category/womens/?order=price_asc" target="_blank" class="link-item">
-                    <i class="fas fa-person-dress w-8 opacity-70"></i><span class="text-xs font-bold">Women's</span>
-                </a>
-                <a href="https://gladd.jp/category/deli/?order=price_asc" target="_blank" class="link-item">
-                    <i class="fas fa-bowl-food w-8 opacity-70"></i><span class="text-xs font-bold">Gourmet</span>
-                </a>
-                <a href="https://gladd.jp/category/beauty/?order=price_asc" target="_blank" class="link-item">
-                    <i class="fas fa-wand-magic-sparkles w-8 opacity-70"></i><span class="text-xs font-bold">Beauty</span>
-                </a>
-            </div>
+            <!-- GLADD Section -->
+            <section>
+                <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">GLADD Discovery</h2>
+                <a href="https://gladd.jp/category/home/?order=price_asc" target="_blank" class="link-item"><i class="fas fa-couch w-8 opacity-50"></i><span class="text-[11px] font-bold">Home</span></a>
+                <a href="https://gladd.jp/category/mens/?order=price_asc" target="_blank" class="link-item"><i class="fas fa-shirt w-8 opacity-50"></i><span class="text-[11px] font-bold">Men's</span></a>
+                <a href="https://gladd.jp/category/womens/?order=price_asc" target="_blank" class="link-item"><i class="fas fa-person-dress w-8 opacity-50"></i><span class="text-[11px] font-bold">Women's</span></a>
+                <a href="https://gladd.jp/category/deli/?order=price_asc" target="_blank" class="link-item"><i class="fas fa-bowl-food w-8 opacity-50"></i><span class="text-[11px] font-bold">Gourmet</span></a>
+                <a href="https://gladd.jp/category/beauty/?order=price_asc" target="_blank" class="link-item"><i class="fas fa-wand-magic-sparkles w-8 opacity-50"></i><span class="text-[11px] font-bold">Beauty</span></a>
+            </section>
         </nav>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main>
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-2 gap-4">
-            <div class="text-sm font-black uppercase tracking-[0.2em] text-white/50 italic flex-shrink-0">
-                <i class="fas fa-calendar-day mr-2 text-[#ff0055]"></i>Operations Board
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="text-[10px] font-black uppercase tracking-widest text-white/40 italic flex items-center gap-4">
+                <span><i class="fas fa-terminal mr-2 text-[#ff0055]"></i>Operations Board</span>
             </div>
-            <form action="https://www.google.com/search" method="GET" target="_blank" class="relative w-full max-w-md group">
-                <input type="text" name="q" placeholder="Search knowledge base..." class="w-full glass py-3 px-12 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/20 text-sm font-medium text-white placeholder:text-white/20 transition-all">
-                <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-white/20 text-xs group-focus-within:text-white/60 transition-colors"></i>
-            </form>
+            
+            <div class="flex items-center gap-3 w-full max-w-lg">
+                <form action="https://www.google.com/search" method="GET" target="_blank" class="relative flex-1">
+                    <input type="text" name="q" placeholder="Command + Search..." class="w-full glass py-2 pl-9 pr-4 rounded-xl focus:outline-none focus:ring-1 focus:ring-white/20 text-xs text-white placeholder:text-white/20">
+                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20 text-[10px]"></i>
+                </form>
+                
+                <button id="tools-toggle">
+                    <i class="fas fa-microchip"></i> TOOLS
+                </button>
+            </div>
         </header>
 
-        <!-- Calendar Section -->
         <div class="calendar-wrapper glass">
             <iframe 
                 src="https://calendar.google.com/calendar/embed?src=546b37adac3e17e0b0c6496dd3fb9e39af1376300bffab9f9b0ca424c61b392c%40group.calendar.google.com&ctz=Asia%2FTokyo&showTitle=0&showPrint=0&showTabs=0&showCalendars=0&showNav=1" 
@@ -219,75 +275,85 @@
         </div>
     </main>
 
+    <!-- RIGHT SIDEBAR (TOOLS) -->
+    <aside class="sidebar-right custom-scrollbar">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-black italic tracking-tighter text-[#60a5fa]">TOOLS</h2>
+            <button onclick="toggleRightSidebar()" class="close-btn text-white/20 hover:text-white transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="space-y-1">
+            <a href="https://chatgpt.com" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">ChatGPT</span>
+                <i class="fas fa-bolt text-green-400"></i>
+            </a>
+            <a href="https://gemini.google.com" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">Gemini</span>
+                <i class="fas fa-sparkles text-blue-300"></i>
+            </a>
+            <a href="https://grok.com" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">Grok</span>
+                <i class="fas fa-rocket text-gray-400"></i>
+            </a>
+            <a href="https://copilot.microsoft.com" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">Copilot</span>
+                <i class="fab fa-microsoft text-blue-500"></i>
+            </a>
+            <a href="https://www.perplexity.ai" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">Perplexity</span>
+                <i class="fas fa-magnifying-glass text-cyan-400"></i>
+            </a>
+            <a href="https://felo.ai" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">Felo</span>
+                <i class="fas fa-magnifying-glass-plus text-yellow-500"></i>
+            </a>
+            <a href="https://notebooklm.google.com" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">NotebookLM</span>
+                <i class="fas fa-book-open text-orange-400"></i>
+            </a>
+            <a href="https://huggingface.co" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">Hugging Face</span>
+                <i class="fas fa-face-smile text-yellow-300"></i>
+            </a>
+        </div>
+    </aside>
+
     <script>
-        // Clock Functionality
         function updateClock() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('ja-JP', { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                hour12: false 
-            });
-            const dateStr = now.toLocaleDateString('ja-JP', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                weekday: 'short' 
-            }).toUpperCase();
-            
+            const timeStr = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const dateStr = now.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }).toUpperCase();
             document.getElementById('clock').textContent = timeStr;
             document.getElementById('date').textContent = dateStr;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Weather Functionality (Open-Meteo API)
         async function fetchWeather() {
             try {
                 const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.6465&longitude=139.6533&current_weather=true&timezone=Asia%2FTokyo');
-                if (!res.ok) throw new Error('Network response was not ok');
-                
                 const data = await res.json();
                 if (!data.current_weather) return;
-
-                const temp = Math.round(data.current_weather.temperature);
+                document.getElementById('temp').textContent = `${Math.round(data.current_weather.temperature)}°C`;
+                let icon = 'fas fa-cloud';
                 const code = data.current_weather.weathercode;
-                
-                document.getElementById('temp').textContent = `${temp}°C`;
-                const iconEl = document.getElementById('weather-icon');
-                
-                // Weather Code Mapping (WMO codes)
-                let iconClass = 'fas fa-cloud text-white';
-                if (code === 0) iconClass = 'fas fa-sun text-yellow-400';
-                else if (code <= 3) iconClass = 'fas fa-cloud-sun text-yellow-200';
-                else if (code <= 48) iconClass = 'fas fa-cloud text-white/80';
-                else if (code <= 67) iconClass = 'fas fa-cloud-showers-heavy text-blue-400';
-                else if (code <= 77) iconClass = 'fas fa-snowflake text-blue-200';
-                else iconClass = 'fas fa-bolt text-purple-400';
-                
-                iconEl.className = `${iconClass} text-2xl transition-all duration-500`;
-            } catch (e) {
-                console.error("Weather update failed:", e);
-                document.getElementById('temp').textContent = "ERR";
-            }
+                if (code === 0) icon = 'fas fa-sun text-yellow-400';
+                else if (code <= 3) icon = 'fas fa-cloud-sun text-yellow-200';
+                else if (code <= 67) icon = 'fas fa-cloud-showers-heavy text-blue-400';
+                document.getElementById('weather-icon').className = `${icon} text-xl transition-all`;
+            } catch (e) { document.getElementById('temp').textContent = "--"; }
         }
         fetchWeather();
-        setInterval(fetchWeather, 600000); // 10 minutes
+        setInterval(fetchWeather, 600000);
 
-        // Navigation UI Logic
-        document.querySelectorAll('.link-item').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    document.querySelector('aside').classList.remove('open');
-                }
-            });
-        });
-
-        // Close sidebar on main click (mobile)
-        document.querySelector('main').addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                document.querySelector('aside').classList.remove('open');
+        const rightSidebar = document.querySelector('.sidebar-right');
+        function toggleRightSidebar() { if (window.innerWidth < 1200) rightSidebar.classList.toggle('open'); }
+        document.getElementById('tools-toggle').addEventListener('click', (e) => { e.stopPropagation(); toggleRightSidebar(); });
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1200 && rightSidebar.classList.contains('open') && !rightSidebar.contains(e.target)) {
+                rightSidebar.classList.remove('open');
             }
         });
     </script>
