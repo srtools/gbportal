@@ -157,6 +157,7 @@
             border-radius: 1.2rem;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
         }
         
         iframe {
@@ -222,10 +223,12 @@
             <section class="mb-6">
                 <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Essential</h2>
                 <a href="https://google.com" target="_blank" class="link-item"><i class="fab fa-google w-8 opacity-50"></i><span class="text-[11px] font-bold">Google</span></a>
+                <a href="https://drive.google.com" target="_blank" class="link-item"><i class="fab fa-google-drive w-8 opacity-50"></i><span class="text-[11px] font-bold">Google Drive</span></a>
+                <a href="https://x.com" target="_blank" class="link-item"><i class="fab fa-x-twitter w-8 opacity-50"></i><span class="text-[11px] font-bold">X</span></a>
+                <a href="https://note.com" target="_blank" class="link-item"><i class="fas fa-file-pen w-8 opacity-50"></i><span class="text-[11px] font-bold">note</span></a>
                 <a href="https://youtube.com" target="_blank" class="link-item"><i class="fab fa-youtube w-8 opacity-50"></i><span class="text-[11px] font-bold">YouTube</span></a>
                 <a href="https://maps.google.com" target="_blank" class="link-item"><i class="fas fa-map-location-dot w-8 opacity-50"></i><span class="text-[11px] font-bold">Maps</span></a>
                 <a href="https://www.bloomberg.com/jp/" target="_blank" class="link-item"><i class="fas fa-chart-line w-8 opacity-50"></i><span class="text-[11px] font-bold">Bloomberg</span></a>
-                <a href="https://gb-n8n.duckdns.org" target="_blank" class="link-item"><i class="fas fa-robot w-8 opacity-50"></i><span class="text-[11px] font-bold">n8n Automation</span></a>
             </section>
 
             <!-- Banking Section -->
@@ -268,6 +271,7 @@
 
         <div class="calendar-wrapper glass">
             <iframe 
+                id="google-calendar"
                 src="https://calendar.google.com/calendar/embed?src=546b37adac3e17e0b0c6496dd3fb9e39af1376300bffab9f9b0ca424c61b392c%40group.calendar.google.com&ctz=Asia%2FTokyo&showTitle=0&showPrint=0&showTabs=0&showCalendars=0&showNav=1" 
                 frameborder="0" 
                 scrolling="no">
@@ -285,6 +289,18 @@
         </div>
         
         <div class="space-y-1">
+            <a href="https://github.com/dashboard" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">GitHub</span>
+                <i class="fab fa-github text-white"></i>
+            </a>
+            <a href="https://gb-n8n.duckdns.org" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">n8n Automation</span>
+                <i class="fas fa-robot text-purple-400"></i>
+            </a>
+            <a href="https://zapier.com/app/login?next=%2Fapp%2Fhome" target="_blank" class="tool-item">
+                <span class="text-[11px] font-bold">Zapier</span>
+                <i class="fas fa-bolt-lightning text-orange-500"></i>
+            </a>
             <a href="https://chatgpt.com" target="_blank" class="tool-item">
                 <span class="text-[11px] font-bold">ChatGPT</span>
                 <i class="fas fa-bolt text-green-400"></i>
@@ -348,9 +364,23 @@
         fetchWeather();
         setInterval(fetchWeather, 600000);
 
+        // Calendar Auto-Refresh (Every 15 minutes)
+        function refreshCalendar() {
+            const iframe = document.getElementById('google-calendar');
+            const currentSrc = iframe.src;
+            iframe.src = ''; 
+            iframe.src = currentSrc; 
+        }
+        setInterval(refreshCalendar, 900000); 
+
         const rightSidebar = document.querySelector('.sidebar-right');
-        function toggleRightSidebar() { if (window.innerWidth < 1200) rightSidebar.classList.toggle('open'); }
-        document.getElementById('tools-toggle').addEventListener('click', (e) => { e.stopPropagation(); toggleRightSidebar(); });
+        function toggleRightSidebar() { 
+            if (window.innerWidth < 1200) rightSidebar.classList.toggle('open'); 
+        }
+        document.getElementById('tools-toggle').addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            toggleRightSidebar(); 
+        });
         document.addEventListener('click', (e) => {
             if (window.innerWidth < 1200 && rightSidebar.classList.contains('open') && !rightSidebar.contains(e.target)) {
                 rightSidebar.classList.remove('open');
