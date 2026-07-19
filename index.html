@@ -219,11 +219,13 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto custom-scrollbar pr-1">
-            <!-- Essential Section -->
+            <!-- Essential Section (Outlook Added) -->
             <section class="mb-6">
                 <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Essential</h2>
                 <a href="https://google.com" target="_blank" class="link-item"><i class="fab fa-google w-8 opacity-50"></i><span class="text-[11px] font-bold">Google</span></a>
                 <a href="https://drive.google.com" target="_blank" class="link-item"><i class="fab fa-google-drive w-8 opacity-50"></i><span class="text-[11px] font-bold">Google Drive</span></a>
+                <!-- Outlook added right below Google Drive -->
+                <a href="https://outlook.live.com/mail/0/" target="_blank" class="link-item"><i class="fas fa-envelope-open-text w-8 opacity-50"></i><span class="text-[11px] font-bold">Outlook</span></a>
                 <a href="https://x.com" target="_blank" class="link-item"><i class="fab fa-x-twitter w-8 opacity-50"></i><span class="text-[11px] font-bold">X</span></a>
                 <a href="https://note.com" target="_blank" class="link-item"><i class="fas fa-file-pen w-8 opacity-50"></i><span class="text-[11px] font-bold">note</span></a>
                 <a href="https://youtube.com" target="_blank" class="link-item"><i class="fab fa-youtube w-8 opacity-50"></i><span class="text-[11px] font-bold">YouTube</span></a>
@@ -365,18 +367,13 @@
     <!-- Firebase core & Firestore SDK (ES Modules) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // UI References
-        const memoStatusEl = document.getElementById('memo-status');
-        const memoTextarea = document.getElementById('shared-memo');
-        
-        let isTyping = false;
-        let typingTimeout = null;
+        const memo = document.getElementById('shared-memo');
+        const status = document.getElementById('memo-status');
 
-        // 1. 環境が提供するシームレスなFirebase接続情報を取得
-        // ご提供いただいた専用プロジェクト (gb-portal-memo) のキーをセットしました
+        // 極限までシンプルに定義した Firebase 設定
         const fallbackConfig = {
             apiKey: "AIzaSyBj__fZtqpI1KpY2YvFUjFX51nX1x8Akrw",
             authDomain: "gb-portal-memo.firebaseapp.com",
@@ -386,100 +383,56 @@
             appId: "1:325394862606:web:c4c1ee49019021522ae25f"
         };
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gb-portal-v3-default';
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
+            ? (typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config)
             : fallbackConfig;
 
-        // Status updater
-        function updateStatus(text, iconClass) {
-            memoStatusEl.innerHTML = `<i class="fas ${iconClass}"></i> ${text}`;
-        }
+        try {
+            // Firebase 初期化
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
 
-        async function startFirebaseSync() {
-            updateStatus('Connecting', 'fa-circle-notch fa-spin text-blue-400');
+            // セキュリティ不要・誰でも編集OKのため、シンプルに匿名認証を通すだけ
+            signInAnonymously(auth).then(() => {
+                status.innerHTML = '<i class="fas fa-check text-green-400"></i> Connected';
+                memo.disabled = false;
 
-            try {
-                // Initialize Firebase
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                const db = getFirestore(app);
+                // 保存先パスの生成
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'gb-portal-v3-default';
+                const domain = (window.location.hostname || 'local-preview').replace(/[^a-zA-Z0-9]/g, '_');
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'memos', `global_memo_${domain}`);
 
-                // Authenticate before queries (Rule 3)
-                let userCredential;
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    userCredential = await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    userCredential = await signInAnonymously(auth);
-                }
-
-                const user = userCredential.user;
-                if (!user) {
-                    updateStatus('Auth Failed', 'fa-exclamation-triangle text-red-500');
-                    return;
-                }
-
-                // ドメイン別に完全自動でセパレートされたドキュメントパスを構築します
-                const domainKey = (window.location.hostname || 'local-preview').replace(/[^a-zA-Z0-9]/g, '_');
-                
-                // Rule 1: /artifacts/{appId}/public/data/{collectionName} に厳密に従い、memosコレクション内を編集
-                const memoDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'memos', `global_memo_${domainKey}`);
-
-                // Real-time synchronization subscription
-                onSnapshot(memoDocRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const remoteText = docSnap.data().text || '';
-                        
-                        // 入力中のカーソルジャンプ・文字化け・強制書き換えを防ぐ競合回避制御
-                        if (document.activeElement !== memoTextarea && !isTyping) {
-                            memoTextarea.value = remoteText;
-                        } else if (document.activeElement === memoTextarea && !isTyping) {
-                            const selectionStart = memoTextarea.selectionStart;
-                            const selectionEnd = memoTextarea.selectionEnd;
-                            memoTextarea.value = remoteText;
-                            memoTextarea.setSelectionRange(selectionStart, selectionEnd);
-                        }
+                // Firestoreからリアルタイム受信
+                onSnapshot(docRef, (snap) => {
+                    if (snap.exists() && document.activeElement !== memo) {
+                        memo.value = snap.data().text || '';
                     }
-                    updateStatus('Synced', 'fa-check text-green-400');
-                    memoTextarea.disabled = false;
-                }, (error) => {
-                    console.error("Firestore real-time subscription error:", error);
-                    updateStatus('Sync Error', 'fa-exclamation-triangle text-red-500');
                 });
 
-                // タイピングが終了して1秒後にのみ自動保存をかけるデバウンス処理
-                memoTextarea.addEventListener('input', () => {
-                    isTyping = true;
-                    updateStatus('Typing...', 'fa-pen text-yellow-400');
-
-                    clearTimeout(typingTimeout);
-                    typingTimeout = setTimeout(async () => {
-                        updateStatus('Saving...', 'fa-circle-notch fa-spin text-blue-400');
-                        try {
-                            await setDoc(memoDocRef, {
-                                text: memoTextarea.value,
-                                updatedAt: new Date().toISOString(),
-                                updatedBy: user.uid
-                            }, { merge: true });
-                            updateStatus('Synced', 'fa-check text-green-400');
-                        } catch (error) {
-                            console.error("Firestore setDoc failed:", error);
-                            updateStatus('Save Failed', 'fa-exclamation-triangle text-red-500');
-                        }
-                        isTyping = false;
-                    }, 1000);
+                // 超シンプルな保存処理（400ミリ秒遅延デバウンスで入力ストレスなく同期）
+                let timer;
+                memo.addEventListener('input', () => {
+                    status.innerHTML = '<i class="fas fa-pen text-yellow-400"></i> Typing...';
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        status.innerHTML = '<i class="fas fa-circle-notch fa-spin text-blue-400"></i> Saving...';
+                        setDoc(docRef, { text: memo.value }, { merge: true })
+                            .then(() => {
+                                status.innerHTML = '<i class="fas fa-check text-green-400"></i> Synced';
+                            })
+                            .catch(() => {
+                                status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Error';
+                            });
+                    }, 400);
                 });
 
-            } catch (err) {
-                console.error("Firebase Initialization Error:", err);
-                updateStatus('Offline', 'fa-exclamation-triangle text-red-500');
-            }
+            }).catch(() => {
+                status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Auth Error';
+            });
+        } catch (e) {
+            status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Offline';
         }
-
-        // Initialize on page load
-        window.addEventListener('load', () => {
-            startFirebaseSync();
-        });
     </script>
 
     <script>
