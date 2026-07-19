@@ -42,9 +42,9 @@
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Right Sidebar (TOOLS) */
+        /* Right Sidebar (TOOLS & MEMO) */
         .sidebar-right {
-            width: 260px;
+            width: 280px;
             background: var(--sidebar-right-color);
             height: 100vh;
             position: fixed;
@@ -69,7 +69,7 @@
                 box-shadow: none;
                 z-index: 40;
             }
-            main { margin-right: 260px; }
+            main { margin-right: 280px; }
             #tools-toggle { display: none !important; }
             .sidebar-right .close-btn { display: none; }
         }
@@ -192,7 +192,7 @@
 </head>
 <body>
 
-    <button id="mobile-left-toggle" onclick="document.querySelector('.sidebar-left').classList.toggle('open')">
+    <button id="mobile-left-toggle">
         <i class="fas fa-bars"></i>
     </button>
 
@@ -279,16 +279,42 @@
         </div>
     </main>
 
-    <!-- RIGHT SIDEBAR (TOOLS) -->
+    <!-- RIGHT SIDEBAR (SHARED MEMO & TOOLS) -->
     <aside class="sidebar-right custom-scrollbar">
-        <div class="flex justify-between items-center mb-8">
+        <!-- 1. AUTOMATIC REAL-TIME SHARED MEMO (AT THE ABSOLUTE TOP) -->
+        <div class="mb-6 pb-6 border-b border-white/10">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-[10px] font-black text-white/40 uppercase tracking-widest italic flex items-center gap-1.5">
+                    <i class="fas fa-cloud text-[#60a5fa] animate-pulse"></i> Shared Memo (Cloud)
+                </h3>
+                <span id="memo-status" class="text-[8px] text-white/40 italic flex items-center gap-1 font-mono">
+                    <i class="fas fa-circle-notch fa-spin text-blue-400"></i> Connecting
+                </span>
+            </div>
+            
+            <textarea id="shared-memo" 
+                      class="w-full h-40 bg-black/40 border border-white/10 p-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#60a5fa] text-xs text-white placeholder:text-white/20 resize-none custom-scrollbar" 
+                      placeholder="メモを入力してください。他端末でも自動で即座にリアルタイム同期されます。" disabled></textarea>
+            
+            <div class="text-[8px] text-white/30 mt-1.5 leading-relaxed">
+                ※同じドメインを開いている全端末間で完全に自動でデータ同期が行われます。（ログイン不要・Localstorage不使用）
+            </div>
+        </div>
+
+        <!-- 2. TOOLS TITLE & LISTING -->
+        <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-black italic tracking-tighter text-[#60a5fa]">TOOLS</h2>
-            <button onclick="toggleRightSidebar()" class="close-btn text-white/20 hover:text-white transition-colors">
+            <button id="close-right-sidebar" class="close-btn text-white/20 hover:text-white transition-colors">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
         
         <div class="space-y-1">
+            <!-- Claude Link at the absolute top of the tools -->
+            <a href="https://claude.ai/new" target="_blank" class="tool-item border border-amber-500/20 hover:border-amber-500/50 bg-amber-500/5">
+                <span class="text-[11px] font-bold text-amber-200">Claude</span>
+                <i class="fas fa-brain text-amber-300"></i>
+            </a>
             <a href="https://github.com/dashboard" target="_blank" class="tool-item">
                 <span class="text-[11px] font-bold">GitHub</span>
                 <i class="fab fa-github text-white"></i>
@@ -336,7 +362,128 @@
         </div>
     </aside>
 
+    <!-- Firebase core & Firestore SDK (ES Modules) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // UI References
+        const memoStatusEl = document.getElementById('memo-status');
+        const memoTextarea = document.getElementById('shared-memo');
+        
+        let isTyping = false;
+        let typingTimeout = null;
+
+        // 1. 環境が提供するシームレスなFirebase接続情報を取得
+        // ご提供いただいた専用プロジェクト (gb-portal-memo) のキーをセットしました
+        const fallbackConfig = {
+            apiKey: "AIzaSyBj__fZtqpI1KpY2YvFUjFX51nX1x8Akrw",
+            authDomain: "gb-portal-memo.firebaseapp.com",
+            projectId: "gb-portal-memo",
+            storageBucket: "gb-portal-memo.firebasestorage.app",
+            messagingSenderId: "325394862606",
+            appId: "1:325394862606:web:c4c1ee49019021522ae25f"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gb-portal-v3-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : fallbackConfig;
+
+        // Status updater
+        function updateStatus(text, iconClass) {
+            memoStatusEl.innerHTML = `<i class="fas ${iconClass}"></i> ${text}`;
+        }
+
+        async function startFirebaseSync() {
+            updateStatus('Connecting', 'fa-circle-notch fa-spin text-blue-400');
+
+            try {
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+
+                // Authenticate before queries (Rule 3)
+                let userCredential;
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    userCredential = await signInAnonymously(auth);
+                }
+
+                const user = userCredential.user;
+                if (!user) {
+                    updateStatus('Auth Failed', 'fa-exclamation-triangle text-red-500');
+                    return;
+                }
+
+                // ドメイン別に完全自動でセパレートされたドキュメントパスを構築します
+                const domainKey = (window.location.hostname || 'local-preview').replace(/[^a-zA-Z0-9]/g, '_');
+                
+                // Rule 1: /artifacts/{appId}/public/data/{collectionName} に厳密に従い、memosコレクション内を編集
+                const memoDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'memos', `global_memo_${domainKey}`);
+
+                // Real-time synchronization subscription
+                onSnapshot(memoDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const remoteText = docSnap.data().text || '';
+                        
+                        // 入力中のカーソルジャンプ・文字化け・強制書き換えを防ぐ競合回避制御
+                        if (document.activeElement !== memoTextarea && !isTyping) {
+                            memoTextarea.value = remoteText;
+                        } else if (document.activeElement === memoTextarea && !isTyping) {
+                            const selectionStart = memoTextarea.selectionStart;
+                            const selectionEnd = memoTextarea.selectionEnd;
+                            memoTextarea.value = remoteText;
+                            memoTextarea.setSelectionRange(selectionStart, selectionEnd);
+                        }
+                    }
+                    updateStatus('Synced', 'fa-check text-green-400');
+                    memoTextarea.disabled = false;
+                }, (error) => {
+                    console.error("Firestore real-time subscription error:", error);
+                    updateStatus('Sync Error', 'fa-exclamation-triangle text-red-500');
+                });
+
+                // タイピングが終了して1秒後にのみ自動保存をかけるデバウンス処理
+                memoTextarea.addEventListener('input', () => {
+                    isTyping = true;
+                    updateStatus('Typing...', 'fa-pen text-yellow-400');
+
+                    clearTimeout(typingTimeout);
+                    typingTimeout = setTimeout(async () => {
+                        updateStatus('Saving...', 'fa-circle-notch fa-spin text-blue-400');
+                        try {
+                            await setDoc(memoDocRef, {
+                                text: memoTextarea.value,
+                                updatedAt: new Date().toISOString(),
+                                updatedBy: user.uid
+                            }, { merge: true });
+                            updateStatus('Synced', 'fa-check text-green-400');
+                        } catch (error) {
+                            console.error("Firestore setDoc failed:", error);
+                            updateStatus('Save Failed', 'fa-exclamation-triangle text-red-500');
+                        }
+                        isTyping = false;
+                    }, 1000);
+                });
+
+            } catch (err) {
+                console.error("Firebase Initialization Error:", err);
+                updateStatus('Offline', 'fa-exclamation-triangle text-red-500');
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            startFirebaseSync();
+        });
+    </script>
+
     <script>
+        // Clock functionality
         function updateClock() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
@@ -347,6 +494,7 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        // Weather forecast api handler (Setagaya, Tokyo)
         async function fetchWeather() {
             try {
                 const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.6465&longitude=139.6533&current_weather=true&timezone=Asia%2FTokyo');
@@ -364,7 +512,7 @@
         fetchWeather();
         setInterval(fetchWeather, 600000);
 
-        // Calendar Auto-Refresh (Every 15 minutes)
+        // Google Calendar Refresher (Every 15 minutes)
         function refreshCalendar() {
             const iframe = document.getElementById('google-calendar');
             const currentSrc = iframe.src;
@@ -373,17 +521,36 @@
         }
         setInterval(refreshCalendar, 900000); 
 
+        // Sidebar interactions (Responsive controls)
         const rightSidebar = document.querySelector('.sidebar-right');
+        const leftSidebar = document.querySelector('.sidebar-left');
+
         function toggleRightSidebar() { 
             if (window.innerWidth < 1200) rightSidebar.classList.toggle('open'); 
         }
+        
         document.getElementById('tools-toggle').addEventListener('click', (e) => { 
             e.stopPropagation(); 
             toggleRightSidebar(); 
         });
+
+        document.getElementById('close-right-sidebar').addEventListener('click', () => {
+            rightSidebar.classList.remove('open');
+        });
+
+        document.getElementById('mobile-left-toggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            leftSidebar.classList.toggle('open');
+        });
+
         document.addEventListener('click', (e) => {
-            if (window.innerWidth < 1200 && rightSidebar.classList.contains('open') && !rightSidebar.contains(e.target)) {
+            // Close right sidebar when clicking outside on mobile
+            if (window.innerWidth < 1200 && rightSidebar.classList.contains('open') && !rightSidebar.contains(e.target) && e.target.id !== 'tools-toggle') {
                 rightSidebar.classList.remove('open');
+            }
+            // Close left sidebar when clicking outside on mobile
+            if (window.innerWidth < 768 && leftSidebar.classList.contains('open') && !leftSidebar.contains(e.target) && e.target.id !== 'mobile-left-toggle') {
+                leftSidebar.classList.remove('open');
             }
         });
     </script>
