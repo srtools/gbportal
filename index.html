@@ -203,12 +203,12 @@
                 <span class="bg-white text-[#800040] px-1.5 rounded">GB</span> PORTAL
             </h1>
             
-            <div class="space-y-3 mb-6">
-                <div class="glass p-4 rounded-xl border-l-4 border-white">
+            <div class="space-y-2 mb-4">
+                <div class="glass py-2 px-3 rounded-xl border-l-4 border-white">
                     <div id="clock" class="text-2xl font-black tracking-tighter text-white tabular-nums">00:00:00</div>
                     <div id="date" class="text-white/40 text-[9px] font-bold uppercase tracking-wider">202X/XX/XX</div>
                 </div>
-                <div class="glass p-3 rounded-xl flex items-center justify-between">
+                <div class="glass py-2 px-3 rounded-xl flex items-center justify-between">
                     <i id="weather-icon" class="fas fa-circle-notch fa-spin text-xl text-white/20"></i>
                     <div class="text-right">
                         <div id="temp" class="text-lg font-black text-white">--°C</div>
@@ -219,18 +219,17 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto custom-scrollbar pr-1">
-            <!-- Essential Section (Outlook Added) -->
+            <!-- Essential Section -->
             <section class="mb-6">
                 <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Essential</h2>
                 <a href="https://google.com" target="_blank" class="link-item"><i class="fab fa-google w-8 opacity-50"></i><span class="text-[11px] font-bold">Google</span></a>
                 <a href="https://drive.google.com" target="_blank" class="link-item"><i class="fab fa-google-drive w-8 opacity-50"></i><span class="text-[11px] font-bold">Google Drive</span></a>
-                <!-- Outlook added right below Google Drive -->
                 <a href="https://outlook.live.com/mail/0/" target="_blank" class="link-item"><i class="fas fa-envelope-open-text w-8 opacity-50"></i><span class="text-[11px] font-bold">Outlook</span></a>
                 <a href="https://x.com" target="_blank" class="link-item"><i class="fab fa-x-twitter w-8 opacity-50"></i><span class="text-[11px] font-bold">X</span></a>
-                <a href="https://note.com" target="_blank" class="link-item"><i class="fas fa-file-pen w-8 opacity-50"></i><span class="text-[11px] font-bold">note</span></a>
+                <!-- Instagram added -->
+                <a href="https://www.instagram.com/" target="_blank" class="link-item"><i class="fab fa-instagram w-8 opacity-50"></i><span class="text-[11px] font-bold">Instagram</span></a>
                 <a href="https://youtube.com" target="_blank" class="link-item"><i class="fab fa-youtube w-8 opacity-50"></i><span class="text-[11px] font-bold">YouTube</span></a>
                 <a href="https://maps.google.com" target="_blank" class="link-item"><i class="fas fa-map-location-dot w-8 opacity-50"></i><span class="text-[11px] font-bold">Maps</span></a>
-                <a href="https://www.bloomberg.com/jp/" target="_blank" class="link-item"><i class="fas fa-chart-line w-8 opacity-50"></i><span class="text-[11px] font-bold">Bloomberg</span></a>
             </section>
 
             <!-- Banking Section -->
@@ -238,6 +237,8 @@
                 <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Banking</h2>
                 <a href="https://login.paypay-bank.co.jp" target="_blank" class="link-item"><i class="fas fa-wallet w-8 opacity-50"></i><span class="text-[11px] font-bold">PayPay Bank</span></a>
                 <a href="https://fes.rakuten-bank.co.jp/MS/main/RbS?CurrentPageID=START&&COMMAND=LOGIN" target="_blank" class="link-item"><i class="fas fa-credit-card w-8 opacity-50"></i><span class="text-[11px] font-bold">Rakuten Bank</span></a>
+                <!-- Rakuten Securities added -->
+                <a href="https://www.rakuten-sec.co.jp/ITS/V_ACT_Login.html" target="_blank" class="link-item"><i class="fas fa-chart-line w-8 opacity-50"></i><span class="text-[11px] font-bold">Rakuten Sec</span></a>
             </section>
 
             <!-- GLADD Section -->
@@ -373,7 +374,7 @@
         const memo = document.getElementById('shared-memo');
         const status = document.getElementById('memo-status');
 
-        // 極限までシンプルに定義した Firebase 設定
+        // Firebase 設定
         const fallbackConfig = {
             apiKey: "AIzaSyBj__fZtqpI1KpY2YvFUjFX51nX1x8Akrw",
             authDomain: "gb-portal-memo.firebaseapp.com",
@@ -393,7 +394,7 @@
             const auth = getAuth(app);
             const db = getFirestore(app);
 
-            // セキュリティ不要・誰でも編集OKのため、シンプルに匿名認証を通すだけ
+            // 匿名認証
             signInAnonymously(auth).then(() => {
                 status.innerHTML = '<i class="fas fa-check text-green-400"></i> Connected';
                 memo.disabled = false;
@@ -404,13 +405,18 @@
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'memos', `global_memo_${domain}`);
 
                 // Firestoreからリアルタイム受信
-                onSnapshot(docRef, (snap) => {
-                    if (snap.exists() && document.activeElement !== memo) {
-                        memo.value = snap.data().text || '';
+                onSnapshot(docRef, 
+                    (snap) => {
+                        if (snap.exists() && document.activeElement !== memo) {
+                            memo.value = snap.data().text || '';
+                        }
+                    },
+                    (error) => {
+                        console.warn('Firestore snapshot error:', error.message);
                     }
-                });
+                );
 
-                // 超シンプルな保存処理（400ミリ秒遅延デバウンスで入力ストレスなく同期）
+                // 同期処理
                 let timer;
                 memo.addEventListener('input', () => {
                     status.innerHTML = '<i class="fas fa-pen text-yellow-400"></i> Typing...';
@@ -421,16 +427,19 @@
                             .then(() => {
                                 status.innerHTML = '<i class="fas fa-check text-green-400"></i> Synced';
                             })
-                            .catch(() => {
+                            .catch((err) => {
+                                console.warn('Firestore setDoc error:', err.message);
                                 status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Error';
                             });
                     }, 400);
                 });
 
-            }).catch(() => {
+            }).catch((authError) => {
+                console.warn('Firebase Auth error:', authError.message);
                 status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Auth Error';
             });
         } catch (e) {
+            console.warn('Firebase setup error:', e.message);
             status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Offline';
         }
     </script>
