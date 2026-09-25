@@ -57,6 +57,7 @@
             gap: 1.2rem; 
             height: 100vh; 
             transition: all 0.3s;
+            overflow-y: auto;
         }
         
         .glass { 
@@ -85,8 +86,24 @@
             border-color: var(--accent-red);
         }
 
-        .calendar-wrapper {
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.2rem;
             flex: 1;
+            min-height: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        .calendar-wrapper {
+            height: 100%;
+            min-height: 500px;
             background: #000; 
             border-radius: 1.2rem;
             overflow: hidden;
@@ -153,7 +170,7 @@
                 </div>
             </div>
 
-            <!-- SHARED MEMO (MOVED FROM RIGHT SIDEBAR) -->
+            <!-- SHARED MEMO -->
             <div class="mb-4 pb-4 border-b border-white/10">
                 <div class="flex justify-between items-center mb-1.5">
                     <h3 class="text-[9px] font-black text-white/40 uppercase tracking-widest italic flex items-center gap-1.5">
@@ -164,16 +181,24 @@
                     </span>
                 </div>
                 <textarea id="shared-memo" 
-                          class="w-full h-28 bg-black/40 border border-white/10 p-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#60a5fa] text-xs text-white placeholder:text-white/20 resize-none custom-scrollbar" 
+                          class="w-full h-24 bg-black/40 border border-white/10 p-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#60a5fa] text-xs text-white placeholder:text-white/20 resize-none custom-scrollbar" 
                           placeholder="リアルタイム同期メモ..." disabled></textarea>
             </div>
         </div>
 
         <nav class="flex-1 overflow-y-auto custom-scrollbar pr-1">
-            <!-- Essential Section -->
+            <!-- Essential Section (With Claude, Gemini, Tenbin AI added) -->
             <section class="mb-6">
                 <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Essential</h2>
-                <a href="https://google.com" target="_blank" class="link-item"><i class="fab fa-google w-8 opacity-50"></i><span class="text-[11px] font-bold">Google</span></a>
+                <a href="https://tenbin.ai/workspace" target="_blank" class="link-item border border-teal-500/30 hover:border-teal-500/60 bg-teal-500/5">
+                    <i class="fas fa-scale-balanced w-8 text-teal-300 opacity-80"></i><span class="text-[11px] font-bold text-teal-200">天秤AI</span>
+                </a>
+                <a href="https://claude.ai/new" target="_blank" class="link-item border border-amber-500/30 hover:border-amber-500/60 bg-amber-500/5">
+                    <i class="fas fa-brain w-8 text-amber-300 opacity-80"></i><span class="text-[11px] font-bold text-amber-200">Claude</span>
+                </a>
+                <a href="https://gemini.google.com" target="_blank" class="link-item">
+                    <i class="fas fa-sparkles w-8 text-blue-300 opacity-80"></i><span class="text-[11px] font-bold">Gemini</span>
+                </a>
                 <a href="https://drive.google.com" target="_blank" class="link-item"><i class="fab fa-google-drive w-8 opacity-50"></i><span class="text-[11px] font-bold">Google Drive</span></a>
                 <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" class="link-item"><i class="far fa-calendar-alt w-8 opacity-50"></i><span class="text-[11px] font-bold">Google Calendar</span></a>
                 <a href="https://outlook.live.com/mail/0/" target="_blank" class="link-item"><i class="fas fa-envelope-open-text w-8 opacity-50"></i><span class="text-[11px] font-bold">Outlook</span></a>
@@ -189,32 +214,6 @@
                 <a href="https://login.paypay-bank.co.jp" target="_blank" class="link-item"><i class="fas fa-wallet w-8 opacity-50"></i><span class="text-[11px] font-bold">PayPay Bank</span></a>
                 <a href="https://fes.rakuten-bank.co.jp/MS/main/RbS?CurrentPageID=START&&COMMAND=LOGIN" target="_blank" class="link-item"><i class="fas fa-credit-card w-8 opacity-50"></i><span class="text-[11px] font-bold">Rakuten Bank</span></a>
                 <a href="https://www.rakuten-sec.co.jp/ITS/V_ACT_Login.html" target="_blank" class="link-item"><i class="fas fa-chart-line w-8 opacity-50"></i><span class="text-[11px] font-bold">Rakuten Sec</span></a>
-            </section>
-
-            <!-- Tools Section (MOVED BELOW BANKING) -->
-            <section class="mb-6">
-                <h2 class="text-[9px] font-black text-[#60a5fa] uppercase tracking-widest mb-2 italic">Tools</h2>
-                <a href="https://tenbin.ai/workspace" target="_blank" class="link-item border border-teal-500/30 hover:border-teal-500/60 bg-teal-500/5">
-                    <i class="fas fa-scale-balanced w-8 text-teal-300 opacity-80"></i><span class="text-[11px] font-bold text-teal-200">天秤AI</span>
-                </a>
-                <a href="https://claude.ai/new" target="_blank" class="link-item border border-amber-500/30 hover:border-amber-500/60 bg-amber-500/5">
-                    <i class="fas fa-brain w-8 text-amber-300 opacity-80"></i><span class="text-[11px] font-bold text-amber-200">Claude</span>
-                </a>
-                <a href="https://gemini.google.com" target="_blank" class="link-item">
-                    <i class="fas fa-sparkles w-8 text-blue-300 opacity-80"></i><span class="text-[11px] font-bold">Gemini</span>
-                </a>
-                <a href="https://notebooklm.google.com" target="_blank" class="link-item">
-                    <i class="fas fa-book-open w-8 text-orange-400 opacity-80"></i><span class="text-[11px] font-bold">NotebookLM</span>
-                </a>
-                <a href="https://github.com/dashboard" target="_blank" class="link-item">
-                    <i class="fab fa-github w-8 opacity-50"></i><span class="text-[11px] font-bold">GitHub</span>
-                </a>
-                <a href="https://zapier.com/app/login?next=%2Fapp%2Fhome" target="_blank" class="link-item">
-                    <i class="fas fa-bolt-lightning w-8 text-orange-500 opacity-80"></i><span class="text-[11px] font-bold">Zapier</span>
-                </a>
-                <a href="https://huggingface.co" target="_blank" class="link-item">
-                    <i class="fas fa-face-smile w-8 text-yellow-300 opacity-80"></i><span class="text-[11px] font-bold">Hugging Face</span>
-                </a>
             </section>
 
             <!-- GLADD Section -->
@@ -244,14 +243,51 @@
             </div>
         </header>
 
-        <!-- Google Calendar Container with Updated Calendar ID -->
-        <div class="calendar-wrapper glass">
-            <iframe 
-                id="google-calendar"
-                src="https://calendar.google.com/calendar/embed?src=59388b3c665eeb3dbc2800f926b13a6661522232bdade863100b56666b25a095%40group.calendar.google.com&ctz=Asia%2FTokyo&showTitle=0&showPrint=0&showTabs=0&showCalendars=0&showNav=1" 
-                frameborder="0" 
-                scrolling="no">
-            </iframe>
+        <!-- Dashboard Grid: Calendar & Todo List Side by Side -->
+        <div class="dashboard-grid">
+            <!-- Google Calendar Container -->
+            <div class="calendar-wrapper glass">
+                <iframe 
+                    id="google-calendar"
+                    src="https://calendar.google.com/calendar/embed?src=59388b3c665eeb3dbc2800f926b13a6661522232bdade863100b56666b25a095%40group.calendar.google.com&ctz=Asia%2FTokyo&showTitle=0&showPrint=0&showTabs=0&showCalendars=0&showNav=1" 
+                    frameborder="0" 
+                    scrolling="no">
+                </iframe>
+            </div>
+
+            <!-- Firebase Cloud Todo List Component -->
+            <div class="glass rounded-2xl p-4 flex flex-col h-full border border-white/10 min-h-[450px]">
+                <div class="flex justify-between items-center pb-3 mb-3 border-b border-white/10">
+                    <h2 class="text-xs font-black uppercase tracking-widest text-white/70 italic flex items-center gap-2">
+                        <i class="fas fa-[#ff0055] fa-list-check text-[#ff0055]"></i> Cloud ToDo
+                    </h2>
+                    <span id="todo-status" class="text-[9px] text-white/40 font-mono italic">
+                        <i class="fas fa-circle-notch fa-spin text-blue-400"></i> Loading
+                    </span>
+                </div>
+
+                <!-- Input Form -->
+                <form id="todo-form" class="flex gap-2 mb-3">
+                    <input type="text" id="todo-input" placeholder="新しいタスクを入力..." 
+                           class="flex-1 bg-black/40 border border-white/10 px-3 py-2 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#ff0055] placeholder:text-white/20" disabled>
+                    <button type="submit" id="todo-add-btn" class="bg-[#ff0055] hover:bg-pink-600 text-white text-xs px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1 opacity-50 cursor-not-allowed" disabled>
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </form>
+
+                <!-- Todo List Items Container -->
+                <div id="todo-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 max-h-[500px]">
+                    <div class="text-center py-8 text-white/30 text-xs italic">
+                        タスクを読み込み中...
+                    </div>
+                </div>
+
+                <!-- Todo Footer Info -->
+                <div class="pt-3 mt-auto border-t border-white/5 flex justify-between items-center text-[9px] text-white/30">
+                    <span id="todo-count">0 items remaining</span>
+                    <button id="clear-completed-btn" class="hover:text-white/70 transition hidden">完了済みを消去</button>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -261,8 +297,20 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Shared Memo Elements
         const memo = document.getElementById('shared-memo');
-        const status = document.getElementById('memo-status');
+        const memoStatus = document.getElementById('memo-status');
+
+        // Todo Elements
+        const todoStatus = document.getElementById('todo-status');
+        const todoForm = document.getElementById('todo-form');
+        const todoInput = document.getElementById('todo-input');
+        const todoAddBtn = document.getElementById('todo-add-btn');
+        const todoList = document.getElementById('todo-list');
+        const todoCount = document.getElementById('todo-count');
+        const clearCompletedBtn = document.getElementById('clear-completed-btn');
+
+        let todos = [];
 
         // Firebase Configuration
         const fallbackConfig = {
@@ -284,48 +332,176 @@
             const db = getFirestore(app);
 
             signInAnonymously(auth).then(() => {
-                status.innerHTML = '<i class="fas fa-check text-green-400"></i> Connected';
+                // Shared Memo Initialization
+                memoStatus.innerHTML = '<i class="fas fa-check text-green-400"></i> Connected';
                 memo.disabled = false;
+
+                // Todo Form Enable
+                todoStatus.innerHTML = '<i class="fas fa-check text-green-400"></i> Synced';
+                todoInput.disabled = false;
+                todoAddBtn.disabled = false;
+                todoAddBtn.classList.remove('opacity-50', 'cursor-not-allowed');
 
                 const appId = typeof __app_id !== 'undefined' ? __app_id : 'gb-portal-v3-default';
                 const domain = (window.location.hostname || 'local-preview').replace(/[^a-zA-Z0-9]/g, '_');
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'memos', `global_memo_${domain}`);
+                
+                // Firestore Docs
+                const memoDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'memos', `global_memo_${domain}`);
+                const todoDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'todos', `global_todos_${domain}`);
 
-                onSnapshot(docRef, 
+                // --- 1. SHARED MEMO SYNC ---
+                onSnapshot(memoDocRef, 
                     (snap) => {
                         if (snap.exists() && document.activeElement !== memo) {
                             memo.value = snap.data().text || '';
                         }
                     },
                     (error) => {
-                        console.warn('Firestore snapshot error:', error.message);
+                        console.warn('Firestore memo error:', error.message);
                     }
                 );
 
-                let timer;
+                let memoTimer;
                 memo.addEventListener('input', () => {
-                    status.innerHTML = '<i class="fas fa-pen text-yellow-400"></i> Typing...';
-                    clearTimeout(timer);
-                    timer = setTimeout(() => {
-                        status.innerHTML = '<i class="fas fa-circle-notch fa-spin text-blue-400"></i> Saving...';
-                        setDoc(docRef, { text: memo.value }, { merge: true })
+                    memoStatus.innerHTML = '<i class="fas fa-pen text-yellow-400"></i> Typing...';
+                    clearTimeout(memoTimer);
+                    memoTimer = setTimeout(() => {
+                        memoStatus.innerHTML = '<i class="fas fa-circle-notch fa-spin text-blue-400"></i> Saving...';
+                        setDoc(memoDocRef, { text: memo.value }, { merge: true })
                             .then(() => {
-                                status.innerHTML = '<i class="fas fa-check text-green-400"></i> Synced';
+                                memoStatus.innerHTML = '<i class="fas fa-check text-green-400"></i> Synced';
                             })
                             .catch((err) => {
                                 console.warn('Firestore setDoc error:', err.message);
-                                status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Error';
+                                memoStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Error';
                             });
                     }, 400);
                 });
 
+                // --- 2. TODO LIST SYNC ---
+                const renderTodos = () => {
+                    if (todos.length === 0) {
+                        todoList.innerHTML = '<div class="text-center py-8 text-white/30 text-xs italic">タスクはありません</div>';
+                        todoCount.textContent = '0 items remaining';
+                        clearCompletedBtn.classList.add('hidden');
+                        return;
+                    }
+
+                    todoList.innerHTML = '';
+                    let activeCount = 0;
+                    let hasCompleted = false;
+
+                    todos.forEach((todo) => {
+                        if (!todo.completed) activeCount++;
+                        if (todo.completed) hasCompleted = true;
+
+                        const itemEl = document.createElement('div');
+                        itemEl.className = `flex items-center justify-between p-2.5 rounded-xl border transition-all ${
+                            todo.completed ? 'bg-black/20 border-white/5 opacity-50' : 'bg-black/40 border-white/10 hover:border-white/20'
+                        }`;
+
+                        itemEl.innerHTML = `
+                            <div class="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
+                                <button class="toggle-btn w-4 h-4 rounded border ${todo.completed ? 'bg-[#ff0055] border-[#ff0055]' : 'border-white/30'} flex items-center justify-center text-[10px] text-white transition-all">
+                                    ${todo.completed ? '<i class="fas fa-check"></i>' : ''}
+                                </button>
+                                <span class="text-xs text-white truncate ${todo.completed ? 'line-through text-white/40' : ''}">${escapeHtml(todo.text)}</span>
+                            </div>
+                            <button class="delete-btn text-white/20 hover:text-red-400 text-xs px-1 transition-colors">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+
+                        // Toggle completion
+                        itemEl.querySelector('.toggle-btn').addEventListener('click', () => {
+                            todo.completed = !todo.completed;
+                            saveTodos();
+                        });
+
+                        // Delete item
+                        itemEl.querySelector('.delete-btn').addEventListener('click', () => {
+                            todos = todos.filter(t => t.id !== todo.id);
+                            saveTodos();
+                        });
+
+                        todoList.appendChild(itemEl);
+                    });
+
+                    todoCount.textContent = `${activeCount} item${activeCount !== 1 ? 's' : ''} remaining`;
+                    if (hasCompleted) {
+                        clearCompletedBtn.classList.remove('hidden');
+                    } else {
+                        clearCompletedBtn.classList.add('hidden');
+                    }
+                };
+
+                const saveTodos = () => {
+                    todoStatus.innerHTML = '<i class="fas fa-circle-notch fa-spin text-blue-400"></i> Saving...';
+                    setDoc(todoDocRef, { items: todos }, { merge: true })
+                        .then(() => {
+                            todoStatus.innerHTML = '<i class="fas fa-check text-green-400"></i> Synced';
+                        })
+                        .catch((err) => {
+                            console.warn('Firestore todo save error:', err.message);
+                            todoStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Error';
+                        });
+                };
+
+                // Real-time listener for Todos
+                onSnapshot(todoDocRef, 
+                    (snap) => {
+                        if (snap.exists()) {
+                            todos = snap.data().items || [];
+                            renderTodos();
+                        } else {
+                            todos = [];
+                            renderTodos();
+                        }
+                    },
+                    (error) => {
+                        console.warn('Firestore todos snapshot error:', error.message);
+                    }
+                );
+
+                // Add Todo
+                todoForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const text = todoInput.value.trim();
+                    if (!text) return;
+
+                    const newTodo = {
+                        id: Date.now().toString(),
+                        text: text,
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    todos.unshift(newTodo);
+                    todoInput.value = '';
+                    saveTodos();
+                });
+
+                // Clear Completed
+                clearCompletedBtn.addEventListener('click', () => {
+                    todos = todos.filter(t => !t.completed);
+                    saveTodos();
+                });
+
             }).catch((authError) => {
                 console.warn('Firebase Auth error:', authError.message);
-                status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Auth Error';
+                memoStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Auth Error';
+                todoStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Auth Error';
             });
         } catch (e) {
             console.warn('Firebase setup error:', e.message);
-            status.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Offline';
+            memoStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Offline';
+            todoStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Offline';
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
         }
     </script>
 
