@@ -187,7 +187,7 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto custom-scrollbar pr-1">
-            <!-- Essential Section (With Claude, Gemini, Tenbin AI added) -->
+            <!-- Essential Section (Gemini removed) -->
             <section class="mb-6">
                 <h2 class="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Essential</h2>
                 <a href="https://tenbin.ai/workspace" target="_blank" class="link-item border border-teal-500/30 hover:border-teal-500/60 bg-teal-500/5">
@@ -195,9 +195,6 @@
                 </a>
                 <a href="https://claude.ai/new" target="_blank" class="link-item border border-amber-500/30 hover:border-amber-500/60 bg-amber-500/5">
                     <i class="fas fa-brain w-8 text-amber-300 opacity-80"></i><span class="text-[11px] font-bold text-amber-200">Claude</span>
-                </a>
-                <a href="https://gemini.google.com" target="_blank" class="link-item">
-                    <i class="fas fa-sparkles w-8 text-blue-300 opacity-80"></i><span class="text-[11px] font-bold">Gemini</span>
                 </a>
                 <a href="https://drive.google.com" target="_blank" class="link-item"><i class="fab fa-google-drive w-8 opacity-50"></i><span class="text-[11px] font-bold">Google Drive</span></a>
                 <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" class="link-item"><i class="far fa-calendar-alt w-8 opacity-50"></i><span class="text-[11px] font-bold">Google Calendar</span></a>
@@ -230,15 +227,22 @@
 
     <!-- MAIN CONTENT -->
     <main>
-        <header class="flex justify-between items-center gap-4">
-            <div class="text-[10px] font-black uppercase tracking-widest text-white/40 italic flex items-center gap-4">
-                <span><i class="fas fa-terminal mr-2 text-[#ff0055]"></i>Operations Board</span>
+        <header class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3 flex-wrap flex-1 min-w-0">
+                <div class="text-[10px] font-black uppercase tracking-widest text-white/40 italic flex items-center gap-1.5 flex-shrink-0">
+                    <i class="fas fa-terminal text-[#ff0055]"></i><span>Operations Board</span>
+                </div>
+
+                <!-- Compact 5-Day Weather Widget (Next to Operations Board) -->
+                <div id="weather-5day-compact" class="glass px-2.5 py-1 rounded-xl flex items-center gap-1.5 border border-white/10 text-[11px] overflow-x-auto custom-scrollbar">
+                    <span class="text-white/30 text-[10px] animate-pulse">Weather Loading...</span>
+                </div>
             </div>
             
-            <div class="flex items-center gap-3 w-full max-w-lg">
+            <div class="flex items-center gap-3 w-full sm:w-auto sm:min-w-[220px]">
                 <form action="https://www.google.com/search" method="GET" target="_blank" class="relative flex-1">
-                    <input type="text" name="q" placeholder="Command + Search..." class="w-full glass py-2 pl-9 pr-4 rounded-xl focus:outline-none focus:ring-1 focus:ring-white/20 text-xs text-white placeholder:text-white/20">
-                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20 text-[10px]"></i>
+                    <input type="text" name="q" placeholder="Command + Search..." class="w-full glass py-1.5 pl-8 pr-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-white/20 text-xs text-white placeholder:text-white/20">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-white/20 text-[10px]"></i>
                 </form>
             </div>
         </header>
@@ -259,7 +263,7 @@
             <div class="glass rounded-2xl p-4 flex flex-col h-full border border-white/10 min-h-[450px]">
                 <div class="flex justify-between items-center pb-3 mb-3 border-b border-white/10">
                     <h2 class="text-xs font-black uppercase tracking-widest text-white/70 italic flex items-center gap-2">
-                        <i class="fas fa-[#ff0055] fa-list-check text-[#ff0055]"></i> Cloud ToDo
+                        <i class="fas fa-list-check text-[#ff0055]"></i> Cloud ToDo
                     </h2>
                     <span id="todo-status" class="text-[9px] text-white/40 font-mono italic">
                         <i class="fas fa-circle-notch fa-spin text-blue-400"></i> Loading
@@ -534,6 +538,71 @@
         }
         fetchWeather();
         setInterval(fetchWeather, 600000);
+
+        // --- 5-Day Weather Forecast Fetching (Compact version for Header) ---
+        async function fetch5DayWeather() {
+            const container = document.getElementById('weather-5day-compact');
+            if (!container) return;
+
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.6465&longitude=139.6533&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo');
+                const data = await res.json();
+
+                if (!data.daily) {
+                    container.innerHTML = '<span class="text-red-400 text-[10px]">Weather N/A</span>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+
+                for (let i = 0; i < 5; i++) {
+                    const dateStr = data.daily.time[i]; // YYYY-MM-DD
+                    const dateParts = dateStr.split('-');
+                    const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                    
+                    const monthDay = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+                    const dayOfWeek = weekDays[dateObj.getDay()];
+                    const isToday = i === 0;
+
+                    const code = data.daily.weathercode[i];
+                    const maxTemp = Math.round(data.daily.temperature_2m_max[i]);
+                    const minTemp = Math.round(data.daily.temperature_2m_min[i]);
+
+                    // Weather code mapping
+                    let iconClass = 'fas fa-cloud text-gray-300';
+                    if (code === 0) iconClass = 'fas fa-sun text-yellow-400';
+                    else if (code <= 3) iconClass = 'fas fa-cloud-sun text-yellow-200';
+                    else if (code <= 48) iconClass = 'fas fa-smog text-gray-400';
+                    else if (code <= 67 || (code >= 80 && code <= 82)) iconClass = 'fas fa-cloud-showers-heavy text-blue-400';
+                    else if (code >= 71 && code <= 77) iconClass = 'fas fa-snowflake text-indigo-200';
+                    else if (code >= 95) iconClass = 'fas fa-cloud-bolt text-amber-400';
+
+                    const item = document.createElement('div');
+                    item.className = `flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] whitespace-nowrap ${
+                        isToday 
+                            ? 'bg-white/10 border-pink-500/50 text-white font-bold' 
+                            : 'bg-black/20 border-white/5 text-white/80'
+                    }`;
+
+                    item.innerHTML = `
+                        <span class="${isToday ? 'text-[#ff0055] font-extrabold' : 'text-white/60'}">${isToday ? '今日' : `${monthDay}(${dayOfWeek})`}</span>
+                        <i class="${iconClass} text-xs"></i>
+                        <span class="font-bold">
+                            <span class="text-red-400">${maxTemp}°</span><span class="text-white/20">/</span><span class="text-blue-300">${minTemp}°</span>
+                        </span>
+                    `;
+
+                    container.appendChild(item);
+                }
+            } catch (e) {
+                console.error('5-day weather fetch error:', e);
+                container.innerHTML = '<span class="text-red-400 text-[10px]">Error</span>';
+            }
+        }
+
+        fetch5DayWeather();
+        setInterval(fetch5DayWeather, 3600000);
 
         // Google Calendar Refresher (Every 15 minutes)
         function refreshCalendar() {
